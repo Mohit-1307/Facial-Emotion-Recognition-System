@@ -11,7 +11,7 @@ venv/
 env/
 
 # Trained model weights and checkpoints (too large for git; see README for download link)
-saved_models/
+saved_models/*.keras
 weights/
 
 # Generated logs (large CSV training logs, safe to exclude — plots/metrics below are kept)
