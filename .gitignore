@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Trained model weights and checkpoints (too large for git; see README for download link)
+saved_models/
+weights/
+
+# Generated logs (large CSV training logs, safe to exclude — plots/metrics below are kept)
+outputs/logs/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+
+# Logs
+*.log
