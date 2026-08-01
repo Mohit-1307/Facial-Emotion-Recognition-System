@@ -4,7 +4,6 @@ __pycache__/
 *.pyo
 *.egg-info/
 .pytest_cache/
-*.ini
 
 # Virtual environment
 venv/
@@ -23,6 +22,7 @@ outputs/logs/
 Thumbs.db
 .vscode/
 *.swp
+*.ini
 
 # Logs
 *.log
