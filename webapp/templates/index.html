@@ -16,7 +16,7 @@
 
     <link
 
-      href = "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap"
+      href = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
 
       rel = "stylesheet"
 
@@ -34,15 +34,11 @@
 
   <body>
 
-    <div class = "scanlines" aria-hidden = "true"></div>
-
     <header class = "topbar">
 
       <div class = "topbar__mark">
 
-        <span class = "topbar__dot"></span>
-
-        <span>DEEPFER</span>
+        <span>DeepFER</span>
 
       </div>
 
@@ -50,7 +46,7 @@
 
         <span
 
-          >MODEL&nbsp;/&nbsp;<strong id = "model-kind"
+          >MODEL&nbsp;<strong id = "model-kind"
 
             >{{ model_kind|upper }}</strong
 
@@ -58,9 +54,9 @@
 
         >
 
-        <span class = "sep">·</span>
+        <span class = "sep">/</span>
 
-        <span>CLASSES&nbsp;/&nbsp;7</span>
+        <span>7 CLASSES</span>
 
       </div>
 
@@ -70,7 +66,7 @@
 
       <section class = "viewfinder-panel">
 
-        <div class = "panel-label">01 — INPUT</div>
+        <div class = "panel-label">Input</div>
 
         <div class = "mode-toggle" role = "tablist">
 
@@ -86,7 +82,7 @@
 
           >
 
-            Upload Photo
+            Upload photo
 
           </button>
 
@@ -102,7 +98,7 @@
 
           >
 
-            Live Camera
+            Live camera
 
           </button>
 
@@ -154,7 +150,7 @@
 
             <p class = "empty-state__sub">
 
-              JPG / PNG · a face gets detected automatically
+              JPG or PNG — a face is detected automatically
 
             </p>
 
@@ -166,17 +162,17 @@
 
         <div class="controls">
 
-          <button id = "camera-start" class = "btn" hidden>Start Camera</button>
+          <button id = "camera-start" class = "btn" hidden>Start camera</button>
 
           <button id = "camera-stop" class = "btn btn--ghost" hidden>
 
-            Stop Camera
+            Stop camera
 
           </button>
 
           <span id = "fps-readout" class = "fps-readout" hidden
 
-            >-- FPS · -- ms</span
+            >— fps · — ms</span
 
           >
 
@@ -186,7 +182,7 @@
 
       <section class = "results-panel">
 
-        <div class = "panel-label">02 — READING</div>
+        <div class = "panel-label">Reading</div>
 
         <div class = "primary-reading">
 
