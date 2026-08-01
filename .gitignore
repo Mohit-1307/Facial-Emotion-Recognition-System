@@ -4,16 +4,18 @@ __pycache__/
 *.pyo
 *.egg-info/
 .pytest_cache/
+*.ini
 
 # Virtual environment
 venv/
 .venv/
 env/
 
-# Trained model weights and checkpoints (too large for git; see README for download link)
+# Trained model weights and checkpoints
+saved_models/
 weights/
 
-# Generated logs (large CSV training logs, safe to exclude — plots/metrics below are kept)
+# Generated logs
 outputs/logs/
 
 # OS/editor cruft
@@ -24,6 +26,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-# ini
-*.ini
