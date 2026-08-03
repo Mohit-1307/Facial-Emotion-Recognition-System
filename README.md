@@ -137,7 +137,7 @@ Facial-Recognition-System/
 ├── realtime_webcam.py             Desktop real-time inference (OpenCV)
 ├── requirements.txt
 ├── README.md                      Project documentation (this file)
-├── DeepFER_Project_Report.pdf     Full project report — methodology, results, evaluation
+├── DeepFER Project Report.pdf     Full project report — methodology, results, evaluation
 └── deepfer/config.py
 ```
  
