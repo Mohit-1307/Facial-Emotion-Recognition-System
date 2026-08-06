@@ -65,6 +65,6 @@
   },
   "n_test_images": 7178,
   "checkpoint": "saved_models/transfer_finetune_best.keras",
-  "inference_seconds_total": 62.732585191726685,
-  "inference_ms_per_image": 8.739563275526148
+  "inference_seconds_total": 63.426777839660645,
+  "inference_ms_per_image": 8.83627442736983
 }

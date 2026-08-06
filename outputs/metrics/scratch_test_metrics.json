@@ -65,6 +65,6 @@
   },
   "n_test_images": 7178,
   "checkpoint": "saved_models/scratch_best.keras",
-  "inference_seconds_total": 14.88875150680542,
-  "inference_ms_per_image": 2.074220048315049
+  "inference_seconds_total": 15.120657920837402,
+  "inference_ms_per_image": 2.1065279912005295
 }
