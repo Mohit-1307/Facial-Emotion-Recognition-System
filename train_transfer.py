@@ -11,7 +11,7 @@ Train the MobileNetV2 transfer-learning model on FER-2013, in two phases.
 Usage
 -----
     python train_transfer.py --phase head     --epochs 15
-    python train_transfer.py --phase finetune --epochs 20
+    python train_transfer.py --phase finetune --epochs 60
 
 Like train.py, both phases support --resume/--max-seconds so a long run can
 be split across several bounded invocations without losing progress --

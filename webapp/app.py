@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+
 DeepFER web application (the project brief's "Application Development"
 requirement: "integrate the emotion recognition system into a user-friendly
 application or interface").
@@ -16,17 +17,17 @@ identical whether you run the desktop OpenCV script or this web app.
 Run:
     python webapp/app.py --model transfer --checkpoint saved_models/transfer_finetune_best.keras
 Then open http://127.0.0.1:5000
+
 """
 import argparse
 import base64
+import os
 import sys
 import time
 from pathlib import Path
-
 import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from deepfer import config  # noqa: E402
 from realtime_webcam import FACE_CASCADE_PATH, EmotionClassifier  # noqa: E402
@@ -36,6 +37,83 @@ app = Flask(__name__)
 CLASSIFIER: EmotionClassifier = None
 
 FACE_CASCADE = cv2.CascadeClassifier(FACE_CASCADE_PATH)
+
+
+def resolve_checkpoint(explicit_path = None, explicit_kind = None):
+
+    """
+
+    Resolve (checkpoint_path, kind) from, in priority order:
+      1. explicit args (CLI, when running `python webapp/app.py` directly)
+      2. MODEL_CHECKPOINT / MODEL_KIND environment variables (for gunicorn /
+         Render, where there is no CLI to pass --checkpoint to)
+      3. auto-detection of the usual filenames under saved_models/
+
+    """
+
+    if explicit_path:
+
+        kind = explicit_kind or ("scratch" if "scratch" in explicit_path else "transfer")
+
+        return explicit_path, kind
+
+    env_path = os.environ.get("MODEL_CHECKPOINT")
+
+    if env_path:
+
+        kind = os.environ.get("MODEL_KIND") or ("scratch" if "scratch" in env_path else "transfer")
+
+        return env_path, kind
+
+    candidates = [
+
+        config.SAVED_MODELS_DIR / "transfer_finetune_best.keras",
+
+        config.SAVED_MODELS_DIR / "transfer_head_best.keras",
+
+        config.SAVED_MODELS_DIR / "scratch_best.keras"
+
+    ]
+
+    found = next((str(c) for c in candidates if c.exists()), None)
+
+    if found is None:
+
+        raise SystemExit(
+
+            "No trained checkpoint found. Set MODEL_CHECKPOINT (and optionally "
+
+            "MODEL_KIND=scratch|transfer) as environment variables, or pass "
+
+            "--checkpoint, or place a .keras file under saved_models/."
+
+        )
+
+    kind = "scratch" if "scratch" in found else "transfer"
+
+    return found, kind
+
+
+def load_classifier_from_env():
+
+    """Module-level load path used by gunicorn (no argparse available here)."""
+
+    checkpoint, kind = resolve_checkpoint()
+
+    print(f"Loading {kind} model from {checkpoint}")
+
+    return EmotionClassifier(checkpoint, kind)
+
+
+if os.environ.get("GUNICORN_LOAD", "1") == "1" and CLASSIFIER is None:
+
+    try:
+
+        CLASSIFIER = load_classifier_from_env()
+
+    except SystemExit as e:
+
+        print(f"WARNING: {e}", file = sys.stderr)
 
 
 def decode_image_from_bytes(raw_bytes: bytes):
@@ -85,6 +163,10 @@ def index():
 
 def predict():
 
+    if CLASSIFIER is None:
+
+        return jsonify({"error": "model not loaded on server -- check MODEL_CHECKPOINT env var"}), 503
+
     if "image" not in request.files:
 
         return jsonify({"error": "no image field in form-data"}), 400
@@ -107,6 +189,10 @@ def predict():
 @app.route("/predict_frame", methods = ["POST"])
 
 def predict_frame():
+
+    if CLASSIFIER is None:
+
+        return jsonify({"error": "model not loaded on server -- check MODEL_CHECKPOINT env var"}), 503
 
     data = request.get_json(silent = True) or {}
 
@@ -156,37 +242,13 @@ def main():
 
     ap.add_argument("--host", default = "127.0.0.1")
 
-    ap.add_argument("--port", type=int, default = 5000)
+    ap.add_argument("--port", type = int, default = int(os.environ.get("PORT", 5000)))
 
     ap.add_argument("--debug", action = "store_true")
 
     args = ap.parse_args()
 
-    checkpoint = args.checkpoint
-
-    if checkpoint is None:
-
-        candidates = [
-
-            config.SAVED_MODELS_DIR / "transfer_finetune_best.keras",
-
-            config.SAVED_MODELS_DIR / "transfer_head_best.keras",
-
-            config.SAVED_MODELS_DIR / "scratch_best.keras"
-
-        ]
-
-        checkpoint = next((str(c) for c in candidates if c.exists()), None)
-
-        if checkpoint is None:
-
-            raise SystemExit("No trained checkpoint found in saved_models/. Train a model first (see README).")
-
-        kind = "scratch" if "scratch" in checkpoint else "transfer"
-
-    else:
-
-        kind = args.model
+    checkpoint, kind = resolve_checkpoint(args.checkpoint, args.model if args.checkpoint else None)
 
     print(f"Loading {kind} model from {checkpoint}")
 
@@ -194,7 +256,7 @@ def main():
 
     print("Model loaded. Starting Flask server ...")
 
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    app.run(host = args.host, port = args.port, debug = args.debug)
 
 
 if __name__ == "__main__":
