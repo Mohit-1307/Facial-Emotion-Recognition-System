@@ -1,13 +1,3 @@
----
-title: DeepFER
-emoji: 😄
-colorFrom: blue
-colorTo: purple
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 <div align="center">
 
 # DeepFER
@@ -19,6 +9,7 @@ Facial emotion recognition on FER-2013 using a from-scratch CNN and a fine-tuned
 ![Platform](https://img.shields.io/badge/platform-CPU%20%7C%20GPU-informational)
 ![Transfer Model Accuracy](https://img.shields.io/badge/transfer%20model%20accuracy-59.46%25-brightgreen)
 ![Scratch Model Accuracy](https://img.shields.io/badge/scratch%20model%20accuracy-52.27%25-yellow)
+[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://deepfer-q8kd.onrender.com)
 
 </div>
 
@@ -33,6 +24,8 @@ DeepFER classifies a face image into one of seven emotions — angry, disgust, f
 Both models are trained on FER-2013, evaluated on its held-out 7,178-image test partition, and shipped with real-time inference (desktop OpenCV and a browser-based Flask application), plus a TFLite export pipeline with measured post-training quantization.
  
 This repository is intended for anyone who wants a working, rigorously-benchmarked FER baseline — the training pipeline, evaluation methodology, and every reported number are reproducible directly from the code.
+
+**Live demo:** [deepfer-q8kd.onrender.com](https://deepfer-q8kd.onrender.com) — the Flask web app, deployed via Docker on Render. Free-tier hosting spins the service down after ~15 minutes of inactivity, so the first request after idling can take 30–60 seconds to wake up.
  
 ### Key capabilities
  
@@ -135,7 +128,9 @@ Facial-Recognition-System/
 ├── tests/
 │   └── test_pipeline.py           End-to-end pipeline test (detection → classification → overlay)
 ├── sample_images/                 Reference images, one per emotion class
-├── saved_models/                  Trained checkpoints and exported TFLite models (not tracked in git)
+├── saved_models/                  Trained checkpoints; only transfer_finetune_best.keras is tracked in git
+├── Dockerfile                     Container build for deployment (gunicorn + webapp/app.py)
+├── .dockerignore                  Excludes venv/, data/, outputs/, caches from the image
 ├── outputs/
 │   ├── metrics/                   Test-set metrics, optimization results (JSON)
 │   ├── plots/                     Confusion matrices, training curves (PNG)
@@ -250,6 +245,34 @@ For the transfer model, full int8 gives the largest speedup and size reduction a
  
 ---
  
+## Deployment
+
+The Flask web application (`webapp/app.py`) is containerized and deployed as a live web service.
+
+- **Live URL:** [deepfer-q8kd.onrender.com](https://deepfer-q8kd.onrender.com)
+- **Host:** [Render](https://render.com), free-tier web service (512 MB RAM, 0.1 CPU)
+- **Container:** `Dockerfile` builds a `python:3.12-slim` image, installs `requirements.txt`, and serves the app with `gunicorn` via a `build_app()` WSGI factory in `webapp/app.py`, which loads the model once at container startup rather than per-request.
+- **Checkpoint:** `saved_models/transfer_finetune_best.keras` is the only checkpoint tracked in git — all other checkpoints and TFLite variants stay out of the repository via `.gitignore`, with a targeted exception rule for this one file.
+- **Config:** `MODEL_KIND` and `CHECKPOINT_PATH` environment variables select which model loads at startup; `PORT` is injected automatically by the host platform.
+
+### Deploy your own copy
+
+Any Docker-capable host works. On Render:
+
+1. Fork/clone this repository and ensure `saved_models/transfer_finetune_best.keras` (or another checkpoint) is committed.
+2. On [render.com](https://render.com), create a **New → Web Service**, connect the repository, and confirm **Docker** is auto-detected as the environment.
+3. Select the **Free** instance type and deploy — Render builds from `Dockerfile` automatically, no build/start command overrides needed.
+4. Free-tier services sleep after ~15 minutes idle and cold-start in 30–60 seconds on the next request; this is a host limitation, not an application issue.
+
+Locally, the same image can be built and run directly:
+
+```bash
+docker build -t deepfer .
+docker run -p 7860:7860 deepfer
+```
+
+---
+ 
 ## Installation
  
 ```bash
@@ -314,7 +337,7 @@ Press `q` to exit. Use `--source path/to/image_or_video` for offline testing ins
 python webapp/app.py
 ```
  
-Open the printed local URL. Supports photo upload and live in-browser camera inference via `getUserMedia`.
+Open the printed local URL. Supports photo upload and live in-browser camera inference via `getUserMedia`. A live hosted instance is also available — see [Deployment](#deployment) — and the same app runs identically via `docker build -t deepfer . && docker run -p 7860:7860 deepfer`.
  
 ### Tests
  
