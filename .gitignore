@@ -12,10 +12,14 @@ env/
 
 # Trained model weights and checkpoints
 saved_models/
+!saved_models/transfer_finetune_best.keras
 weights/
 
-# Generated logs
-outputs/logs/
+# Dataset
+data/
+
+# Generated outputs
+outputs/
 
 # OS/editor cruft
 .DS_Store

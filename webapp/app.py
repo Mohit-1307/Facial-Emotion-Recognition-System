@@ -144,25 +144,17 @@ def healthz():
     return jsonify({"status": "ok", "model": CLASSIFIER.kind if CLASSIFIER else None})
 
 
-def main():
+def load_classifier(checkpoint=None, kind=None):
+    """Load the checkpoint into the module-level CLASSIFIER, resolving
+    defaults from env vars / saved_models/ the same way the CLI does."""
 
     global CLASSIFIER
 
-    ap = argparse.ArgumentParser()
+    import os
 
-    ap.add_argument("--model", choices = ["scratch", "transfer"], default = "transfer")
+    checkpoint = checkpoint or os.environ.get("CHECKPOINT_PATH")
 
-    ap.add_argument("--checkpoint", default = None)
-
-    ap.add_argument("--host", default = "127.0.0.1")
-
-    ap.add_argument("--port", type=int, default = 5000)
-
-    ap.add_argument("--debug", action = "store_true")
-
-    args = ap.parse_args()
-
-    checkpoint = args.checkpoint
+    kind = kind or os.environ.get("MODEL_KIND")
 
     if checkpoint is None:
 
@@ -180,19 +172,50 @@ def main():
 
         if checkpoint is None:
 
-            raise SystemExit("No trained checkpoint found in saved_models/. Train a model first (see README).")
+            raise SystemExit("No trained checkpoint found in saved_models/. Add a .keras checkpoint (see README).")
 
         kind = "scratch" if "scratch" in checkpoint else "transfer"
 
-    else:
+    elif kind is None:
 
-        kind = args.model
+        kind = "scratch" if "scratch" in checkpoint else "transfer"
 
     print(f"Loading {kind} model from {checkpoint}")
 
     CLASSIFIER = EmotionClassifier(checkpoint, kind)
 
-    print("Model loaded. Starting Flask server ...")
+    print("Model loaded.")
+
+    return CLASSIFIER
+
+
+def build_app():
+    """WSGI app factory - used by gunicorn (see Dockerfile CMD)."""
+
+    load_classifier()
+
+    return app
+
+
+def main():
+
+    ap = argparse.ArgumentParser()
+
+    ap.add_argument("--model", choices = ["scratch", "transfer"], default = None)
+
+    ap.add_argument("--checkpoint", default = None)
+
+    ap.add_argument("--host", default = "127.0.0.1")
+
+    ap.add_argument("--port", type=int, default = 5000)
+
+    ap.add_argument("--debug", action = "store_true")
+
+    args = ap.parse_args()
+
+    load_classifier(args.checkpoint, args.model)
+
+    print("Starting Flask server ...")
 
     app.run(host=args.host, port=args.port, debug=args.debug)
 
