@@ -9,7 +9,7 @@ Facial emotion recognition on FER-2013 using a from-scratch CNN and a fine-tuned
 ![Platform](https://img.shields.io/badge/platform-CPU%20%7C%20GPU-informational)
 ![Transfer Model Accuracy](https://img.shields.io/badge/transfer%20model%20accuracy-59.46%25-brightgreen)
 ![Scratch Model Accuracy](https://img.shields.io/badge/scratch%20model%20accuracy-52.27%25-yellow)
-[![Live Demo](https://img.shields.io/badge/demo-live-success)](https://deepfer-q8kd.onrender.com)
+**Live app:** [shopper-spectrum-app.streamlit.app](https://deepfer-q8kd.onrender.com)
 
 </div>
 
