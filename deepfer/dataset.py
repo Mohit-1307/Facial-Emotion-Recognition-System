@@ -1,5 +1,4 @@
 """
-
 Data loading pipeline: directory -> tf.data.Dataset, with augmentation and
 class-weight computation for the from-scratch CNN and the transfer-learning
 model.
@@ -9,7 +8,6 @@ config.CLASS_NAMES (alphabetical), and every image is normalized to [0, 1]
 (or backbone-specific preprocessing for transfer learning) before it reaches
 the model -- augmentation and normalization live in the data pipeline, never
 duplicated in the model definitions.
-
 """
 
 from collections import Counter
@@ -23,11 +21,9 @@ AUTOTUNE = tf.data.AUTOTUNE
 def build_augmentation_layer() -> tf.keras.Sequential:
 
     """
-    
     Rotation + scaling (zoom) + horizontal flip, exactly as specified in
     the project brief's 'Data Augmentation' requirement, plus a small random
     translation to make the model robust to imperfect face crops.
-    
     """
 
     return tf.keras.Sequential(
@@ -52,13 +48,11 @@ def build_augmentation_layer() -> tf.keras.Sequential:
 def compute_class_weights(train_dir = None) -> dict:
 
     """
-    
     Balanced class weights (sklearn 'balanced' formula:
     w_i = n_samples / (n_classes * n_i)) computed from actual file counts on
     disk. FER-2013 is heavily imbalanced (disgust has ~6% as many training
     images as happy) -- without this, the model just learns to rarely
     predict 'disgust' and still gets low loss.
-
     """
 
     train_dir = train_dir or config.TRAIN_DIR
@@ -147,7 +141,6 @@ def get_scratch_datasets(batch_size: int = None):
 def get_transfer_datasets(batch_size: int = None):
     
     """
-    
     160x160 RGB pipeline for the transfer-learning model (resolution comes
     from config.TRANSFER_INPUT_SIZE, so this docstring's number must be kept
     in sync if that value changes again). Grayscale is
@@ -155,7 +148,6 @@ def get_transfer_datasets(batch_size: int = None):
     preprocess_input (scales to [-1, 1] -- NOT the same normalization as the
     scratch pipeline, which is why this is a separate function rather than a
     shared one with a flag).
-    
     """
     
     batch_size = batch_size or config.TRANSFER_BATCH_SIZE

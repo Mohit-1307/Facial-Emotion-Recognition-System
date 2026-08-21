@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
 Train the MobileNetV2 transfer-learning model on FER-2013, in two phases.
 
     Phase "head": backbone frozen, only the classification head trains.
@@ -16,7 +15,6 @@ Usage
 Like train.py, both phases support --resume/--max-seconds so a long run can
 be split across several bounded invocations without losing progress --
 every completed epoch's checkpoint is saved before the next one starts.
-
 """
 
 import argparse

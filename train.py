@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
 Train the from-scratch DeepFER CNN on FER-2013.
 
 Usage
@@ -22,8 +21,8 @@ Run `python evaluate.py --model scratch` afterwards for test-set metrics
 (precision/recall/F1/confusion matrix) -- this script only reports
 train/val numbers, exactly like an ML training run should (the test set
 must stay untouched until final evaluation).
-
 """
+
 import argparse
 import json
 import time
@@ -126,11 +125,9 @@ def main():
     class TimeBudget(tf.keras.callbacks.Callback):
 
         """
-        
         Stops training after --max-seconds elapses, so one bounded tool
         call always ends cleanly (with checkpoints saved) instead of being
         killed mid-write by the outer sandbox timeout.
-        
         """
         
         def __init__(self, max_seconds):

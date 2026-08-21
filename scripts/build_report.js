@@ -25,7 +25,7 @@ const ACCENT_DARK = "1B2A52";
 const MUTED = "5A5F68";
 
 
-// ----------------- helpers --------------------
+// helpers
 
 function h1(text) { return new Paragraph({ text, heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 } });}
 
@@ -160,7 +160,7 @@ function metaLine(label, value) {
 }
 
 
-// ----------- content ----------------
+// content
 
 const titlePage = [
 

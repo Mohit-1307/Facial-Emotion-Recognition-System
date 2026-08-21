@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
 Fetch MobileNetV2 ImageNet-pretrained weights (no classifier head) for the
 transfer-learning model.
 
@@ -32,7 +31,6 @@ non-degenerate softmax predictions (see REPORT.md, "Design Decisions" ->
 Usage
 -----
     python scripts/download_pretrained_weights.py
-    
 """
 
 import sys

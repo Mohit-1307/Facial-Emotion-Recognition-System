@@ -4,9 +4,9 @@
 
   <head>
 
-    <meta charset="UTF-8" />
+    <meta charset = "UTF-8" />
 
-    <meta name = "viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name = "viewport" content = "width=device-width, initial-scale=1.0" />
 
     <title>DeepFER — Facial Emotion Recognition</title>
 
@@ -16,7 +16,7 @@
 
     <link
 
-      href = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
 
       rel = "stylesheet"
 
@@ -30,6 +30,23 @@
 
     />
 
+    <script>
+
+      // Runs before first paint so there is no flash of the wrong theme.
+      // Dark is the default: only switch to light if the user explicitly
+      // chose it before (stored) or their OS prefers light AND they never
+      // overrode it.
+      
+      (function () {
+        var stored = localStorage.getItem("deepfer-theme");
+        var theme = stored || "dark";
+        if (theme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+
+    </script>
+
   </head>
 
   <body>
@@ -40,9 +57,21 @@
 
         <span>DeepFER</span>
 
+        <span class = "topbar__version">v2</span>
+
       </div>
 
-      <div class = "topbar__meta">
+      <nav class = "topbar__meta">
+
+        <span
+
+          class = "health"
+
+          id = "health-dot"
+
+          title = "Connection status"
+
+        ></span>
 
         <span
 
@@ -58,7 +87,65 @@
 
         <span>7 CLASSES</span>
 
-      </div>
+        <span class = "sep">/</span>
+
+        <button
+
+          class = "theme-toggle"
+
+          id = "theme-toggle"
+
+          type = "button"
+
+          title = "Toggle dark / light theme"
+
+        >
+
+          <svg
+
+            class = "icon-sun"
+
+            viewBox = "0 0 24 24"
+
+            fill = "none"
+
+            xmlns = "http://www.w3.org/2000/svg"
+
+          ><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.4M12 19.1v2.4M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+
+          <svg
+
+            class = "icon-moon"
+
+            viewBox = "0 0 24 24"
+
+            fill = "none"
+
+            xmlns = "http://www.w3.org/2000/svg"
+
+          ><path d="M20 14.2A8.2 8.2 0 1 1 9.8 4a6.6 6.6 0 0 0 10.2 10.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+
+        </button>
+
+        <span class = "sep">/</span>
+
+        <button
+
+          class = "kbd-hint"
+
+          id = "shortcuts-btn"
+
+          type = "button"
+
+          title = "Keyboard shortcuts"
+
+        >
+
+          <kbd>?</kbd>
+
+        </button>
+
+      </nav>
 
     </header>
 
@@ -82,7 +169,7 @@
 
           >
 
-            Upload photo
+            <span class = "mode-btn__key">U</span> Upload photo
 
           </button>
 
@@ -98,13 +185,13 @@
 
           >
 
-            Live camera
+            <span class = "mode-btn__key">C</span> Live camera
 
           </button>
 
         </div>
 
-        <div class = "viewfinder" id="viewfinder">
+        <div class = "viewfinder" id = "viewfinder">
 
           <span class = "corner corner--tl"></span>
 
@@ -142,9 +229,35 @@
 
           ></video>
 
-          <canvas id = "overlay-canvas" class="viewfinder__overlay"></canvas>
+          <canvas id = "overlay-canvas" class = "viewfinder__overlay"></canvas>
+
+          <div class = "scanline" id = "scanline" hidden></div>
 
           <div id = "empty-state" class = "empty-state">
+
+            <svg
+
+              class = "empty-state__icon"
+
+              width = "34"
+
+              height = "34"
+
+              viewBox = "0 0 34 34"
+
+              fill = "none"
+
+              aria-hidden = "true"
+
+            >
+
+              <rect x="1" y="1" width="32" height="32" rx="3" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+              <circle cx="17" cy="14" r="5" stroke="currentColor" stroke-width="1.2"/>
+
+              <path d="M8 27c1.8-4.5 5.4-7 9-7s7.2 2.5 9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+
+            </svg>
 
             <p>Drop a photo here, or click to browse</p>
 
@@ -156,11 +269,17 @@
 
           </div>
 
+          <div class = "drop-veil" id = "drop-veil" hidden>
+
+            <span>Release to analyze</span>
+
+          </div>
+
         </div>
 
         <input type = "file" id = "file-input" accept = "image/*" hidden />
 
-        <div class="controls">
+        <div class = "controls">
 
           <button id = "camera-start" class = "btn" hidden>Start camera</button>
 
@@ -170,6 +289,30 @@
 
           </button>
 
+          <label class = "threshold" id = "threshold-wrap" hidden>
+
+            <span>Min confidence</span>
+
+            <input
+
+              type = "range"
+
+              id = "threshold"
+
+              min = "0"
+
+              max = "90"
+
+              value = "0"
+
+              step = "5"
+
+            />
+
+            <span class = "threshold__value" id = "threshold-value">0%</span>
+
+          </label>
+
           <span id = "fps-readout" class = "fps-readout" hidden
 
             >— fps · — ms</span
@@ -178,11 +321,39 @@
 
         </div>
 
+        <div class = "session-log" id = "session-log">
+
+          <div class = "session-log__label">
+
+            <span>Session</span>
+
+            <button id = "clear-log" class = "text-btn" type = "button" hidden>
+
+              Clear
+
+            </button>
+
+          </div>
+
+          <div class = "session-log__strip" id = "session-strip">
+
+            <div class = "session-log__empty">Readings will appear here</div>
+
+          </div>
+
+        </div>
+
       </section>
 
       <section class = "results-panel">
 
-        <div class = "panel-label">Reading</div>
+        <div class = "panel-label">
+
+          <span>Reading</span>
+
+          <button class = "text-btn" id = "export-btn" hidden>Export JSON</button>
+
+        </div>
 
         <div class = "primary-reading">
 
@@ -190,13 +361,19 @@
 
           <div class = "primary-reading__text">
 
-            <div class = "primary-reading__label" id= "primary-label">
+            <div class = "primary-reading__label" id = "primary-label">
 
               Awaiting input
 
             </div>
 
-            <div class = "primary-reading__confidence" id = "primary-confidence">
+            <div
+
+              class = "primary-reading__confidence"
+
+              id = "primary-confidence"
+
+            >
 
               &nbsp;
 
@@ -206,13 +383,31 @@
 
         </div>
 
-        <div class="spectrum" id="spectrum">
+        <div class = "spectrum" id = "spectrum">
 
           <!-- JS populates one .spectrum__row per emotion class -->
 
         </div>
 
-        <div class = "face-count" id="face-count"></div>
+        <div class = "trace-wrap" id = "trace-wrap" hidden>
+
+          <div class = "trace-wrap__label">Confidence trace</div>
+
+          <canvas
+
+            id = "trace-canvas"
+
+            class = "trace-canvas"
+
+            width = "600"
+
+            height = "72"
+
+          ></canvas>
+
+        </div>
+
+        <div class = "face-count" id = "face-count"></div>
 
       </section>
 
@@ -228,7 +423,57 @@
 
       >
 
+      <a
+
+        href = "https://github.com/Mohit-1307/Facial-Emotion-Recognition-System"
+
+        target = "_blank"
+
+        rel = "noopener"
+
+      >Source</a>
+
     </footer>
+
+    <div
+
+      class = "shortcuts-panel"
+
+      id = "shortcuts-panel"
+
+      hidden
+
+      role = "dialog"
+
+      aria-label = "Keyboard shortcuts"
+
+    >
+
+      <div class = "shortcuts-panel__inner">
+
+        <div class = "shortcuts-panel__title">Keyboard shortcuts</div>
+
+        <dl>
+
+          <dt><kbd>U</kbd></dt><dd>Upload photo mode</dd>
+
+          <dt><kbd>C</kbd></dt><dd>Live camera mode</dd>
+
+          <dt><kbd>Space</kbd></dt><dd>Start / stop camera</dd>
+
+          <dt><kbd>Esc</kbd></dt><dd>Clear current reading</dd>
+
+          <dt><kbd>E</kbd></dt><dd>Export last reading as JSON</dd>
+
+          <dt><kbd>T</kbd></dt><dd>Toggle dark / light theme</dd>
+
+          <dt><kbd>?</kbd></dt><dd>Toggle this panel</dd>
+
+        </dl>
+
+      </div>
+
+    </div>
 
     <script>
 

@@ -1,5 +1,4 @@
 """
-
 Transfer-learning model: MobileNetV2 (ImageNet-pretrained) as a frozen
 feature extractor, topped with a small classification head, then
 selectively fine-tuned.
@@ -19,7 +18,6 @@ Phase 2 - fine-tuning: unfreeze the top FINE_TUNE_UNFREEZE_LAYERS layers
             lower learning rate, so the high-level ImageNet features adapt
             to facial expressions without destroying the pretrained
             low-level filters.
-
 """
 
 import tensorflow as tf
@@ -32,7 +30,6 @@ LOCAL_WEIGHTS_FALLBACK = (config.PROJECT_ROOT / "weights" / "mobilenet_v2_weight
 def build_backbone(input_shape = (*config.TRANSFER_INPUT_SIZE, config.TRANSFER_CHANNELS)):
     
     """
-    
     Loads MobileNetV2 pretrained on ImageNet.
 
     Tries the standard Keras auto-download first -- this is what runs on any
@@ -43,7 +40,6 @@ def build_backbone(input_shape = (*config.TRANSFER_INPUT_SIZE, config.TRANSFER_C
     copy of the exact same weight file. See
     scripts/download_pretrained_weights.py for how that local copy was
     obtained and verified.
-    
     """
     try:
 
@@ -107,13 +103,11 @@ def build_transfer_model(
 def set_fine_tune_mode(model: tf.keras.Model, backbone: tf.keras.Model, n_unfreeze: int = config.FINE_TUNE_UNFREEZE_LAYERS):
 
     """
-    
     Unfreeze the top `n_unfreeze` layers of the backbone in place, leaving
     everything below frozen. BatchNorm layers are kept frozen even when
     "unfrozen" positionally -- letting BN running stats drift on a small,
     imbalanced FER-2013 batch is a well-known way to destabilize fine-tuning
     of MobileNet-family models.
-    
     """
 
     backbone.trainable = True

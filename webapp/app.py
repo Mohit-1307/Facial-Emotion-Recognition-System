@@ -29,7 +29,7 @@ from flask import Flask, jsonify, render_template, request
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from deepfer import config  # noqa: E402
-from realtime_webcam import FACE_CASCADE_PATH, EmotionClassifier  # noqa: E402
+from realtime_webcam import FACE_CASCADE_PATH, EmotionClassifier, detect_faces  # noqa: E402
 
 app = Flask(__name__)
 
@@ -47,9 +47,7 @@ def decode_image_from_bytes(raw_bytes: bytes):
 
 def run_detection(frame_bgr):
 
-    gray = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2GRAY)
-
-    faces = FACE_CASCADE.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize = (48, 48))
+    faces = detect_faces(frame_bgr, FACE_CASCADE)
 
     results = []
 
@@ -156,17 +154,37 @@ def load_classifier(checkpoint=None, kind=None):
 
     kind = kind or os.environ.get("MODEL_KIND")
 
+    # Preserve an explicitly-requested kind (e.g. --model scratch) even when
+    # no --checkpoint is given: pick the default checkpoint that matches the
+    # requested kind, instead of always falling back to whichever checkpoint
+    # file happens to exist first.
     if checkpoint is None:
 
-        candidates = [
+        if kind == "scratch":
 
-            config.SAVED_MODELS_DIR / "transfer_finetune_best.keras",
+            candidates = [config.SAVED_MODELS_DIR / "scratch_best.keras"]
 
-            config.SAVED_MODELS_DIR / "transfer_head_best.keras",
+        elif kind == "transfer":
 
-            config.SAVED_MODELS_DIR / "scratch_best.keras"
+            candidates = [
 
-        ]
+                config.SAVED_MODELS_DIR / "transfer_finetune_best.keras",
+
+                config.SAVED_MODELS_DIR / "transfer_head_best.keras",
+
+            ]
+
+        else:
+
+            candidates = [
+
+                config.SAVED_MODELS_DIR / "transfer_finetune_best.keras",
+
+                config.SAVED_MODELS_DIR / "transfer_head_best.keras",
+
+                config.SAVED_MODELS_DIR / "scratch_best.keras",
+
+            ]
 
         checkpoint = next((str(c) for c in candidates if c.exists()), None)
 
@@ -174,7 +192,9 @@ def load_classifier(checkpoint=None, kind=None):
 
             raise SystemExit("No trained checkpoint found in saved_models/. Add a .keras checkpoint (see README).")
 
-        kind = "scratch" if "scratch" in checkpoint else "transfer"
+        if kind is None:
+
+            kind = "scratch" if "scratch" in checkpoint else "transfer"
 
     elif kind is None:
 

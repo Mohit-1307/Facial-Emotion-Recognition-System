@@ -1,5 +1,4 @@
 """
-
 A CNN designed from scratch for 48x48 grayscale facial-emotion classification
 (no pretrained weights -- contrast this with deepfer/models/transfer_model.py).
 
@@ -19,7 +18,6 @@ Design rationale (see REPORT for the full writeup):
     training images for 'disgust') -- fewer parameters in the head means
     less overfitting on the rare classes.
   * Dropout before the final classifier for additional regularization.
-  
 """
 
 import tensorflow as tf

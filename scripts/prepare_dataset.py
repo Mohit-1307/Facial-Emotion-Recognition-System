@@ -1,5 +1,4 @@
 """
-
 prepare_dataset.py
 -------------------
 Turns the raw FER-2013 archive (as distributed on Kaggle: train/<class>/*.jpg,
@@ -30,7 +29,6 @@ Usage
 
 `--raw-dir` must contain `train/` and `test/` subfolders, each with one
 subfolder per emotion class (the standard Kaggle FER-2013 "archive" layout).
-
 """
 
 import argparse

@@ -1,5 +1,4 @@
 """
-
 Sanity tests for the DeepFER pipeline. These are fast, structural checks
 (shapes, ranges, param counts, label ordering) -- NOT a substitute for the
 real accuracy numbers in outputs/metrics/, which come from evaluate.py on
@@ -9,7 +8,6 @@ real example: a naive "first N" sample from an unshuffled directory listing
 that accidentally evaluated on one class only).
 
 Run with:  python -m pytest tests/ -v
-
 """
 import numpy as np
 import pytest
@@ -22,13 +20,11 @@ from deepfer.models.cnn_scratch import build_scratch_cnn
 def test_class_names_alphabetical():
 
     """
-    
     Every module trusts config.CLASS_NAMES to be alphabetical, matching
 
     what image_dataset_from_directory would infer on its own -- if this
 
     ever drifts, predicted class indices silently point at the wrong label.
-    
     """
 
     assert config.CLASS_NAMES == sorted(config.CLASS_NAMES)
@@ -70,10 +66,8 @@ def test_class_weights_favor_rare_classes():
 def test_dataset_pipeline_shapes_and_labels():
 
     """
-    
     Loads a couple of real batches from disk -- requires
     data/processed/ to exist (run scripts/prepare_dataset.py first).
-    
     """
 
     train_ds, val_ds, test_ds, _ = get_scratch_datasets(batch_size=8)

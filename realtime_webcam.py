@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
 Real-time facial emotion recognition from a live webcam feed (the project
 brief's "Real-Time Processing" requirement).
 
@@ -11,8 +10,9 @@ Pipeline per frame:
         face detector would be more accurate but is overkill for this stage
         and adds another model to download/optimize).
     3. Crop + preprocess each face to match the trained model's expected
-        input (48x48 grayscale for --model scratch, 96x96 RGB for
-        --model transfer).
+        input (48x48 grayscale for --model scratch, 160x160 RGB for
+        --model transfer -- see config.TRANSFER_INPUT_SIZE, the single
+        source of truth this script always reads from).
     4. Run the classifier, overlay the predicted emotion + confidence and
         an emoji on the frame.
     5. Show a rolling FPS counter (ties into the "Performance Optimization"
@@ -34,7 +34,6 @@ default) cannot be exercised here. The --source flag exists specifically so
 the detection + classification + overlay pipeline can still be verified
 end-to-end against a static image/video, which is what
 tests/test_pipeline.py does. On your own machine with a webcam, just omit --source.
-
 """
 
 import argparse
@@ -115,11 +114,57 @@ def draw_overlay(frame, box, label, confidence):
     cv2.putText(frame, text, (x + 4, y - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
 
+MIN_DETECTION_SIDE = 300
+
+
+def detect_faces(frame, face_cascade):
+
+    """
+    Runs the Haar-cascade face detector on `frame` and returns boxes in
+    the ORIGINAL frame's coordinate system.
+
+    Two fixes over a naive detectMultiScale call, both needed for small or
+    tightly-cropped inputs (the bundled sample_images are 48x48 -- exactly
+    the case this was breaking on):
+    1. Upscale the frame first if it's smaller than MIN_DETECTION_SIDE on
+        its short side. A face that fills an entire tiny frame has no
+        margin for the cascade's sliding window to work with; upscaling
+        gives it room without changing what's actually in the image.
+    2. Histogram-equalize the grayscale image for contrast, and derive
+        minSize from the *working* resolution rather than a hardcoded
+        48px floor, which silently rejected any face smaller than that in
+        the original frame.
+    """
+
+    h0, w0 = frame.shape[:2]
+
+    short_side = min(h0, w0)
+
+    scale = max(1.0, MIN_DETECTION_SIDE / short_side)
+
+    if scale > 1.0:
+
+        working = cv2.resize(frame, None, fx = scale, fy = scale, interpolation = cv2.INTER_CUBIC)
+
+    else:
+
+        working = frame
+
+    gray = cv2.cvtColor(working, cv2.COLOR_BGR2GRAY)
+
+    gray = cv2.equalizeHist(gray)
+
+    min_side = max(20, int(0.15 * min(working.shape[:2])))
+
+    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize = (min_side, min_side))
+
+    # Map detections back to the original frame's coordinates.
+    return [(int(x / scale), int(y / scale), int(w / scale), int(h / scale)) for (x, y, w, h) in faces]
+
+
 def process_frame(frame, face_cascade, classifier: EmotionClassifier):
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize = (48, 48))
+    faces = detect_faces(frame, face_cascade)
 
     results = []
 

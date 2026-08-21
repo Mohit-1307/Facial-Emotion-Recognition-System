@@ -1,9 +1,7 @@
 """
-
 Shared evaluation + plotting helpers used by train.py, train_transfer.py
 and evaluate.py, so the metrics reported for both models are computed
 identically and are directly comparable.
-
 """
 import json
 import matplotlib
@@ -16,11 +14,9 @@ from deepfer import config
 
 def collect_predictions(model, dataset):
 
-    """
-    
+    """ 
     Runs the model over a tf.data.Dataset and returns (y_true, y_pred, y_prob)
     as numpy arrays, aligned example-for-example.
-    
     """
 
     y_true, y_prob = [], []

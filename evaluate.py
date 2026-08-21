@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
 Evaluate a trained DeepFER checkpoint on the held-out TEST set (never seen
 during training or validation-based checkpoint selection).
 
@@ -12,7 +11,6 @@ Usage
 Writes:
     outputs/metrics/<tag>_test_metrics.json   accuracy, macro/weighted P/R/F1, per-class report
     outputs/plots/<tag>_confusion_matrix.png  normalized confusion matrix heatmap
-    
 """
 
 import argparse
