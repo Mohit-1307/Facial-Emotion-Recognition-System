@@ -6,8 +6,8 @@ __pycache__/
 .pytest_cache/
 
 # Virtual environment
-venv/
 .venv/
+.vscode/
 env/
 
 # Trained model weights and checkpoints
@@ -24,7 +24,6 @@ outputs/
 # OS/editor cruft
 .DS_Store
 Thumbs.db
-.vscode/
 *.swp
 *.ini
 
