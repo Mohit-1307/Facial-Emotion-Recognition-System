@@ -19,7 +19,6 @@ AUTOTUNE = tf.data.AUTOTUNE
 
 
 def build_augmentation_layer() -> tf.keras.Sequential:
-
     """
     Rotation + scaling (zoom) + horizontal flip, exactly as specified in
     the project brief's 'Data Augmentation' requirement, plus a small random
@@ -27,26 +26,23 @@ def build_augmentation_layer() -> tf.keras.Sequential:
     """
 
     return tf.keras.Sequential(
-
         [
-
-            layers.RandomFlip("horizontal") if config.AUG_HORIZONTAL_FLIP else layers.Layer(),
-
-            layers.RandomRotation(config.AUG_ROTATION, fill_mode = "nearest"),
-
-            layers.RandomZoom(config.AUG_ZOOM, fill_mode = "nearest"),
-
-            layers.RandomTranslation(config.AUG_TRANSLATION, config.AUG_TRANSLATION, fill_mode = "nearest")
-
+            (
+                layers.RandomFlip("horizontal")
+                if config.AUG_HORIZONTAL_FLIP
+                else layers.Layer()
+            ),
+            layers.RandomRotation(config.AUG_ROTATION, fill_mode="nearest"),
+            layers.RandomZoom(config.AUG_ZOOM, fill_mode="nearest"),
+            layers.RandomTranslation(
+                config.AUG_TRANSLATION, config.AUG_TRANSLATION, fill_mode="nearest"
+            ),
         ],
-
-        name = "augmentation",
-
+        name="augmentation",
     )
 
 
-def compute_class_weights(train_dir = None) -> dict:
-
+def compute_class_weights(train_dir=None) -> dict:
     """
     Balanced class weights (sklearn 'balanced' formula:
     w_i = n_samples / (n_classes * n_i)) computed from actual file counts on
@@ -63,7 +59,11 @@ def compute_class_weights(train_dir = None) -> dict:
 
         cls_dir = train_dir / cls
 
-        n = sum(1 for p in cls_dir.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"})
+        n = sum(
+            1
+            for p in cls_dir.iterdir()
+            if p.suffix.lower() in {".jpg", ".jpeg", ".png"}
+        )
 
         counts[cls] = n
 
@@ -71,55 +71,64 @@ def compute_class_weights(train_dir = None) -> dict:
 
     n_classes = len(config.CLASS_NAMES)
 
-    weights = {i: total / (n_classes * counts[cls]) for i, cls in enumerate(config.CLASS_NAMES)}
+    weights = {
+        i: total / (n_classes * counts[cls]) for i, cls in enumerate(config.CLASS_NAMES)
+    }
 
     return weights
 
 
 def _load_split(directory, image_size, color_mode, batch_size, shuffle):
-    
+
     return tf.keras.utils.image_dataset_from_directory(
-
         directory,
-
-        labels = "inferred",
-
-        label_mode = "int",
-
-        class_names = config.CLASS_NAMES,
-
-        color_mode = color_mode,
-
-        image_size = image_size,
-
-        batch_size = batch_size,
-
-        shuffle = shuffle,
-
-        seed = config.SEED
-
+        labels="inferred",
+        label_mode="int",
+        class_names=config.CLASS_NAMES,
+        color_mode=color_mode,
+        image_size=image_size,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        seed=config.SEED,
     )
 
 
 def get_scratch_datasets(batch_size: int = None):
-
     "Grayscale 48x48 pipeline for the from-scratch CNN."
 
     batch_size = batch_size or config.SCRATCH_BATCH_SIZE
 
     aug = build_augmentation_layer()
 
-    train_ds = _load_split(config.TRAIN_DIR, config.SCRATCH_INPUT_SIZE, "grayscale", batch_size, shuffle = True)
+    train_ds = _load_split(
+        config.TRAIN_DIR,
+        config.SCRATCH_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=True,
+    )
 
-    val_ds = _load_split(config.VAL_DIR, config.SCRATCH_INPUT_SIZE, "grayscale", batch_size, shuffle = False)
+    val_ds = _load_split(
+        config.VAL_DIR,
+        config.SCRATCH_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=False,
+    )
 
-    test_ds = _load_split(config.TEST_DIR, config.SCRATCH_INPUT_SIZE, "grayscale", batch_size, shuffle = False)
+    test_ds = _load_split(
+        config.TEST_DIR,
+        config.SCRATCH_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=False,
+    )
 
     def prep_train(x, y):
 
         x = tf.cast(x, tf.float32) / 255.0
 
-        x = aug(x, training = True)
+        x = aug(x, training=True)
 
         return x, y
 
@@ -129,17 +138,16 @@ def get_scratch_datasets(batch_size: int = None):
 
         return x, y
 
-    train_ds = train_ds.map(prep_train, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
+    train_ds = train_ds.map(prep_train, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
-    val_ds = val_ds.map(prep_eval, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
+    val_ds = val_ds.map(prep_eval, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
-    test_ds = test_ds.map(prep_eval, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
+    test_ds = test_ds.map(prep_eval, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
     return train_ds, val_ds, test_ds, compute_class_weights()
 
 
 def get_transfer_datasets(batch_size: int = None):
-    
     """
     160x160 RGB pipeline for the transfer-learning model (resolution comes
     from config.TRANSFER_INPUT_SIZE, so this docstring's number must be kept
@@ -149,18 +157,36 @@ def get_transfer_datasets(batch_size: int = None):
     scratch pipeline, which is why this is a separate function rather than a
     shared one with a flag).
     """
-    
+
     batch_size = batch_size or config.TRANSFER_BATCH_SIZE
-    
+
     aug = build_augmentation_layer()
-    
+
     preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
 
-    train_ds = _load_split(config.TRAIN_DIR, config.TRANSFER_INPUT_SIZE, "grayscale", batch_size, shuffle = True)
+    train_ds = _load_split(
+        config.TRAIN_DIR,
+        config.TRANSFER_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=True,
+    )
 
-    val_ds = _load_split(config.VAL_DIR, config.TRANSFER_INPUT_SIZE, "grayscale", batch_size, shuffle = False)
+    val_ds = _load_split(
+        config.VAL_DIR,
+        config.TRANSFER_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=False,
+    )
 
-    test_ds = _load_split(config.TEST_DIR, config.TRANSFER_INPUT_SIZE, "grayscale", batch_size, shuffle = False)
+    test_ds = _load_split(
+        config.TEST_DIR,
+        config.TRANSFER_INPUT_SIZE,
+        "grayscale",
+        batch_size,
+        shuffle=False,
+    )
 
     def to_rgb(x):
 
@@ -170,7 +196,7 @@ def get_transfer_datasets(batch_size: int = None):
 
         x = to_rgb(x)
 
-        x = aug(x, training = True)
+        x = aug(x, training=True)
 
         x = preprocess_input(x)
 
@@ -184,11 +210,10 @@ def get_transfer_datasets(batch_size: int = None):
 
         return x, y
 
+    train_ds = train_ds.map(prep_train, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
-    train_ds = train_ds.map(prep_train, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
+    val_ds = val_ds.map(prep_eval, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
-    val_ds = val_ds.map(prep_eval, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
-
-    test_ds = test_ds.map(prep_eval, num_parallel_calls = AUTOTUNE).prefetch(AUTOTUNE)
+    test_ds = test_ds.map(prep_eval, num_parallel_calls=AUTOTUNE).prefetch(AUTOTUNE)
 
     return train_ds, val_ds, test_ds, compute_class_weights()

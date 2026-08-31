@@ -9,6 +9,7 @@ that accidentally evaluated on one class only).
 
 Run with:  python -m pytest tests/ -v
 """
+
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -18,7 +19,6 @@ from deepfer.models.cnn_scratch import build_scratch_cnn
 
 
 def test_class_names_alphabetical():
-
     """
     Every module trusts config.CLASS_NAMES to be alphabetical, matching
 
@@ -43,9 +43,9 @@ def test_scratch_cnn_output_shape():
     assert y.shape == (2, config.NUM_CLASSES)
 
     # softmax output: each row sums to ~1
-    sums = tf.reduce_sum(y, axis = 1).numpy()
+    sums = tf.reduce_sum(y, axis=1).numpy()
 
-    np.testing.assert_allclose(sums, [1.0, 1.0], atol = 1e-4)
+    np.testing.assert_allclose(sums, [1.0, 1.0], atol=1e-4)
 
 
 def test_class_weights_favor_rare_classes():
@@ -64,7 +64,6 @@ def test_class_weights_favor_rare_classes():
 
 @pytest.mark.slow
 def test_dataset_pipeline_shapes_and_labels():
-
     """
     Loads a couple of real batches from disk -- requires
     data/processed/ to exist (run scripts/prepare_dataset.py first).

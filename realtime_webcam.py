@@ -68,7 +68,7 @@ class EmotionClassifier:
 
             gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
 
-            resized = cv2.resize(gray, self.input_size, interpolation = cv2.INTER_AREA)
+            resized = cv2.resize(gray, self.input_size, interpolation=cv2.INTER_AREA)
 
             arr = resized.astype("float32") / 255.0
 
@@ -78,7 +78,7 @@ class EmotionClassifier:
 
             gray = cv2.cvtColor(face_bgr, cv2.COLOR_BGR2GRAY)
 
-            resized = cv2.resize(gray, self.input_size, interpolation = cv2.INTER_AREA)
+            resized = cv2.resize(gray, self.input_size, interpolation=cv2.INTER_AREA)
 
             rgb = cv2.cvtColor(resized, cv2.COLOR_GRAY2RGB).astype("float32")
 
@@ -90,7 +90,7 @@ class EmotionClassifier:
 
         x = self.preprocess(face_bgr)
 
-        probs = self.model.predict(x, verbose = 0)[0]
+        probs = self.model.predict(x, verbose=0)[0]
 
         idx = int(np.argmax(probs))
 
@@ -111,14 +111,15 @@ def draw_overlay(frame, box, label, confidence):
 
     cv2.rectangle(frame, (x, y - th - 12), (x + tw + 8, y), color, -1)
 
-    cv2.putText(frame, text, (x + 4, y - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    cv2.putText(
+        frame, text, (x + 4, y - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2
+    )
 
 
 MIN_DETECTION_SIDE = 300
 
 
 def detect_faces(frame, face_cascade):
-
     """
     Runs the Haar-cascade face detector on `frame` and returns boxes in
     the ORIGINAL frame's coordinate system.
@@ -144,7 +145,9 @@ def detect_faces(frame, face_cascade):
 
     if scale > 1.0:
 
-        working = cv2.resize(frame, None, fx = scale, fy = scale, interpolation = cv2.INTER_CUBIC)
+        working = cv2.resize(
+            frame, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC
+        )
 
     else:
 
@@ -156,10 +159,15 @@ def detect_faces(frame, face_cascade):
 
     min_side = max(20, int(0.15 * min(working.shape[:2])))
 
-    faces = face_cascade.detectMultiScale(gray, scaleFactor = 1.1, minNeighbors = 5, minSize = (min_side, min_side))
+    faces = face_cascade.detectMultiScale(
+        gray, scaleFactor=1.1, minNeighbors=5, minSize=(min_side, min_side)
+    )
 
     # Map detections back to the original frame's coordinates.
-    return [(int(x / scale), int(y / scale), int(w / scale), int(h / scale)) for (x, y, w, h) in faces]
+    return [
+        (int(x / scale), int(y / scale), int(w / scale), int(h / scale))
+        for (x, y, w, h) in faces
+    ]
 
 
 def process_frame(frame, face_cascade, classifier: EmotionClassifier):
@@ -168,20 +176,26 @@ def process_frame(frame, face_cascade, classifier: EmotionClassifier):
 
     results = []
 
-    for (x, y, w, h) in faces:
+    for x, y, w, h in faces:
 
-        face = frame[y:y + h, x:x + w]
+        face = frame[y : y + h, x : x + w]
 
         label, conf, probs = classifier.predict(face)
 
         draw_overlay(frame, (x, y, w, h), label, conf)
 
-        results.append({"box": (int(x), int(y), int(w), int(h)), "label": label, "confidence": conf})
+        results.append(
+            {
+                "box": (int(x), int(y), int(w), int(h)),
+                "label": label,
+                "confidence": conf,
+            }
+        )
 
     return frame, results
 
 
-def run_on_image(path, classifier, out_path = None):
+def run_on_image(path, classifier, out_path=None):
 
     face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
@@ -204,7 +218,7 @@ def run_on_image(path, classifier, out_path = None):
     return results
 
 
-def run_on_video_or_camera(source, classifier, max_frames = None):
+def run_on_video_or_camera(source, classifier, max_frames=None):
 
     face_cascade = cv2.CascadeClassifier(FACE_CASCADE_PATH)
 
@@ -212,7 +226,9 @@ def run_on_video_or_camera(source, classifier, max_frames = None):
 
     if not cap.isOpened():
 
-        raise SystemExit(f"Could not open video source: {source if source is not None else '(default camera)'}")
+        raise SystemExit(
+            f"Could not open video source: {source if source is not None else '(default camera)'}"
+        )
 
     frame_count = 0
 
@@ -238,7 +254,15 @@ def run_on_video_or_camera(source, classifier, max_frames = None):
 
             fps = frame_count / elapsed
 
-        cv2.putText(frame, f"FPS: {fps:.1f}", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+        cv2.putText(
+            frame,
+            f"FPS: {fps:.1f}",
+            (10, 25),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            (0, 255, 255),
+            2,
+        )
 
         cv2.imshow("DeepFER - press q to quit", frame)
 
@@ -251,7 +275,7 @@ def run_on_video_or_camera(source, classifier, max_frames = None):
             break
 
     cap.release()
-    
+
     cv2.destroyAllWindows()
 
 
@@ -261,16 +285,26 @@ def main():
 
     ap.add_argument("--model", choices=["scratch", "transfer"], default="scratch")
 
-    ap.add_argument("--checkpoint", default = None, help = "Defaults to saved_models/<model>_best.keras")
+    ap.add_argument(
+        "--checkpoint", default=None, help="Defaults to saved_models/<model>_best.keras"
+    )
 
-    ap.add_argument("--source", default = None, help="Path to an image or video file for offline testing. Omit to use the live webcam.")
+    ap.add_argument(
+        "--source",
+        default=None,
+        help="Path to an image or video file for offline testing. Omit to use the live webcam.",
+    )
 
-    ap.add_argument("--out", default = None, help = "Output path when --source is a still image")
+    ap.add_argument(
+        "--out", default=None, help="Output path when --source is a still image"
+    )
 
     args = ap.parse_args()
 
-    checkpoint = args.checkpoint or str(config.SAVED_MODELS_DIR / f"{args.model}_best.keras")
-    
+    checkpoint = args.checkpoint or str(
+        config.SAVED_MODELS_DIR / f"{args.model}_best.keras"
+    )
+
     classifier = EmotionClassifier(checkpoint, args.model)
 
     if args.source and args.source.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
@@ -283,5 +317,5 @@ def main():
 
 
 if __name__ == "__main__":
-    
+
     main()

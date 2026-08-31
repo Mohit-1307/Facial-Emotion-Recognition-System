@@ -37,36 +37,40 @@ def main():
 
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("--epochs", type = int, default = config.SCRATCH_EPOCHS)
+    ap.add_argument("--epochs", type=int, default=config.SCRATCH_EPOCHS)
 
-    ap.add_argument("--batch-size", type = int, default = config.SCRATCH_BATCH_SIZE)
+    ap.add_argument("--batch-size", type=int, default=config.SCRATCH_BATCH_SIZE)
 
-    ap.add_argument("--lr", type = float, default = config.SCRATCH_LR)
-
-    ap.add_argument("--patience", type=int, default = 8, help = "EarlyStopping patience (epochs)")
-
-    ap.add_argument("--no-class-weights", action = "store_true", help = "Disable balanced class weighting")
-
-    ap.add_argument("--tag", default = "scratch", help = "Filename prefix for checkpoints/logs")
+    ap.add_argument("--lr", type=float, default=config.SCRATCH_LR)
 
     ap.add_argument(
-        
-        "--resume", action = "store_true",help = "Resume from saved_models/<tag>_last.keras if it exists (for chunked "
-        
-        "training across multiple bounded runs -- see README 'Reproducing training')."
-        
+        "--patience", type=int, default=8, help="EarlyStopping patience (epochs)"
     )
 
     ap.add_argument(
-        
-        "--max-seconds", type = float, default = None,
-    
-        help = "Soft wall-clock budget for this invocation. A callback stops training "
-    
+        "--no-class-weights",
+        action="store_true",
+        help="Disable balanced class weighting",
+    )
+
+    ap.add_argument(
+        "--tag", default="scratch", help="Filename prefix for checkpoints/logs"
+    )
+
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume from saved_models/<tag>_last.keras if it exists (for chunked "
+        "training across multiple bounded runs -- see README 'Reproducing training').",
+    )
+
+    ap.add_argument(
+        "--max-seconds",
+        type=float,
+        default=None,
+        help="Soft wall-clock budget for this invocation. A callback stops training "
         "(cleanly, saving checkpoints) once elapsed time exceeds this, even mid-epoch-schedule, "
-    
-        "instead of relying on the caller to guess how many epochs fit in the time available."
-                        
+        "instead of relying on the caller to guess how many epochs fit in the time available.",
     )
 
     args = ap.parse_args()
@@ -110,26 +114,20 @@ def main():
         model = build_scratch_cnn()
 
         model.compile(
-
-            optimizer = tf.keras.optimizers.Adam(learning_rate = args.lr),
-
-            loss = "sparse_categorical_crossentropy",
-
-            metrics = ["accuracy"]
-
+            optimizer=tf.keras.optimizers.Adam(learning_rate=args.lr),
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
         )
 
         model.summary()
 
-
     class TimeBudget(tf.keras.callbacks.Callback):
-
         """
         Stops training after --max-seconds elapses, so one bounded tool
         call always ends cleanly (with checkpoints saved) instead of being
         killed mid-write by the outer sandbox timeout.
         """
-        
+
         def __init__(self, max_seconds):
 
             super().__init__()
@@ -142,48 +140,51 @@ def main():
 
             if self.max_seconds and (time.time() - self.t0) > self.max_seconds:
 
-                print(f"\n[TimeBudget] {self.max_seconds}s elapsed -> stopping after epoch {epoch + 1}")
+                print(
+                    f"\n[TimeBudget] {self.max_seconds}s elapsed -> stopping after epoch {epoch + 1}"
+                )
 
                 self.model.stop_training = True
 
     callbacks = [
-
-        tf.keras.callbacks.ModelCheckpoint(str(ckpt_best), monitor = "val_accuracy", mode = "max", save_best_only = True, verbose = 1),
-
-        tf.keras.callbacks.ModelCheckpoint(str(ckpt_last), save_best_only = False, verbose = 0),
-
-        tf.keras.callbacks.EarlyStopping(monitor = "val_loss", patience = args.patience, restore_best_weights = True, verbose = 1),
-
-        tf.keras.callbacks.ReduceLROnPlateau(monitor = "val_loss", factor = 0.5, patience = 3, min_lr = 1e-6, verbose = 1),
-
-        tf.keras.callbacks.CSVLogger(str(history_csv), append = args.resume)
-
+        tf.keras.callbacks.ModelCheckpoint(
+            str(ckpt_best),
+            monitor="val_accuracy",
+            mode="max",
+            save_best_only=True,
+            verbose=1,
+        ),
+        tf.keras.callbacks.ModelCheckpoint(
+            str(ckpt_last), save_best_only=False, verbose=0
+        ),
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=args.patience,
+            restore_best_weights=True,
+            verbose=1,
+        ),
+        tf.keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1
+        ),
+        tf.keras.callbacks.CSVLogger(str(history_csv), append=args.resume),
     ]
-    
+
     if args.max_seconds:
-        
+
         callbacks.append(TimeBudget(args.max_seconds))
 
     t0 = time.time()
 
     history = model.fit(
-
         train_ds,
-
-        validation_data = val_ds,
-
-        initial_epoch = initial_epoch,
-
-        epochs = args.epochs,
-
-        class_weight = None if args.no_class_weights else class_weights,
-
-        callbacks = callbacks,
-
-        verbose = 2
-
+        validation_data=val_ds,
+        initial_epoch=initial_epoch,
+        epochs=args.epochs,
+        class_weight=None if args.no_class_weights else class_weights,
+        callbacks=callbacks,
+        verbose=2,
     )
-    
+
     elapsed = time.time() - t0
 
     plot_path = config.PLOTS_DIR / f"{args.tag}_training_curves.png"
@@ -193,27 +194,16 @@ def main():
     best_val_acc = max(history.history["val_accuracy"])
 
     summary = {
-
         "model": "scratch_cnn",
-
         "epochs_ran": len(history.history["loss"]),
-
         "epochs_requested": args.epochs,
-
         "best_val_accuracy": best_val_acc,
-
         "final_train_accuracy": history.history["accuracy"][-1],
-
         "training_seconds": elapsed,
-
         "batch_size": args.batch_size,
-
         "initial_lr": args.lr,
-
         "class_weighted": not args.no_class_weights,
-
-        "checkpoint": str(ckpt_best)
-
+        "checkpoint": str(ckpt_best),
     }
 
     with open(config.METRICS_DIR / f"{args.tag}_train_summary.json", "w") as f:
@@ -222,7 +212,7 @@ def main():
 
     print("\n=== Training complete ===")
 
-    print(json.dumps(summary, indent = 2))
+    print(json.dumps(summary, indent=2))
 
     print(f"Best checkpoint: {ckpt_best}")
 
@@ -230,5 +220,5 @@ def main():
 
 
 if __name__ == "__main__":
-    
+
     main()

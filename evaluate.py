@@ -19,33 +19,43 @@ import time
 import tensorflow as tf
 from deepfer import config
 from deepfer.dataset import get_scratch_datasets, get_transfer_datasets
-from deepfer.metrics_utils import collect_predictions, compute_metrics, plot_confusion_matrix, save_metrics
+from deepfer.metrics_utils import (
+    collect_predictions,
+    compute_metrics,
+    plot_confusion_matrix,
+    save_metrics,
+)
 
 
 def main():
 
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("--checkpoint", required = True)
+    ap.add_argument("--checkpoint", required=True)
 
-    ap.add_argument("--kind", choices = ["scratch", "transfer"], required = True, help = "Which preprocessing pipeline to use (must match how the checkpoint was trained)")
+    ap.add_argument(
+        "--kind",
+        choices=["scratch", "transfer"],
+        required=True,
+        help="Which preprocessing pipeline to use (must match how the checkpoint was trained)",
+    )
 
-    ap.add_argument("--tag", required = True, help = "Filename prefix for outputs")
+    ap.add_argument("--tag", required=True, help="Filename prefix for outputs")
 
-    ap.add_argument("--batch-size", type = int, default = 64)
+    ap.add_argument("--batch-size", type=int, default=64)
 
     args = ap.parse_args()
 
     print(f"Loading checkpoint: {args.checkpoint}")
-    
+
     model = tf.keras.models.load_model(args.checkpoint)
 
     if args.kind == "scratch":
-        
+
         _, _, test_ds, _ = get_scratch_datasets(args.batch_size)
-        
+
     else:
-        
+
         _, _, test_ds, _ = get_transfer_datasets(args.batch_size)
 
     print("Running inference on the test set ...")
@@ -58,7 +68,9 @@ def main():
 
     n = len(y_true)
 
-    print(f"Evaluated {n} test images in {elapsed:.1f}s ({elapsed / n * 1000:.2f} ms/image)")
+    print(
+        f"Evaluated {n} test images in {elapsed:.1f}s ({elapsed / n * 1000:.2f} ms/image)"
+    )
 
     metrics = compute_metrics(y_true, y_pred)
 
@@ -100,7 +112,13 @@ def main():
 
     cm_path = config.PLOTS_DIR / f"{args.tag}_confusion_matrix.png"
 
-    plot_confusion_matrix(y_true, y_pred, config.CLASS_NAMES, cm_path, title = f"DeepFER ({args.tag}) - Test Confusion Matrix")
+    plot_confusion_matrix(
+        y_true,
+        y_pred,
+        config.CLASS_NAMES,
+        cm_path,
+        title=f"DeepFER ({args.tag}) - Test Confusion Matrix",
+    )
 
     print(f"Saved confusion matrix -> {cm_path}")
 

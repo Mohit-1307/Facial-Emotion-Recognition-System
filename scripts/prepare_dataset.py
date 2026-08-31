@@ -40,6 +40,7 @@ from pathlib import Path
 
 CLASS_NAMES = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
 
+
 def collect_images(class_dir: Path):
 
     exts = {".jpg", ".jpeg", ".png"}
@@ -62,7 +63,7 @@ def stratified_split(files, val_fraction, seed):
 
 def copy_all(files, dest_dir: Path):
 
-    dest_dir.mkdir(parents = True, exist_ok = True)
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
     for f in files:
 
@@ -71,15 +72,28 @@ def copy_all(files, dest_dir: Path):
 
 def main():
 
-    ap = argparse.ArgumentParser(description = __doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
 
-    ap.add_argument("--raw-dir", required = True, help = "Path to extracted FER-2013 folder containing train/ and test/")
+    ap.add_argument(
+        "--raw-dir",
+        required=True,
+        help="Path to extracted FER-2013 folder containing train/ and test/",
+    )
 
-    ap.add_argument("--out-dir", default = "data/processed", help = "Where to write the organized split")
+    ap.add_argument(
+        "--out-dir", default="data/processed", help="Where to write the organized split"
+    )
 
-    ap.add_argument("--val-fraction", type = float, default = 0.10, help = "Fraction of the ORIGINAL train split held out for validation")
+    ap.add_argument(
+        "--val-fraction",
+        type=float,
+        default=0.10,
+        help="Fraction of the ORIGINAL train split held out for validation",
+    )
 
-    ap.add_argument("--seed", type = int, default = 42)
+    ap.add_argument("--seed", type=int, default=42)
 
     args = ap.parse_args()
 
@@ -94,17 +108,13 @@ def main():
     if not raw_train.is_dir() or not raw_test.is_dir():
 
         raise SystemExit(
-
             f"Expected '{raw_dir}' to contain train/ and test/ subfolders "
-
             f"(the standard FER-2013 Kaggle layout). Found: "
-
             f"{[p.name for p in raw_dir.iterdir() if p.is_dir()]}"
-
         )
 
     stats = defaultdict(dict)
-    
+
     for cls in CLASS_NAMES:
 
         cls_dir = raw_train / cls
@@ -115,7 +125,9 @@ def main():
 
         all_train_files = collect_images(cls_dir)
 
-        train_files, val_files = stratified_split(all_train_files, args.val_fraction, args.seed)
+        train_files, val_files = stratified_split(
+            all_train_files, args.val_fraction, args.seed
+        )
 
         test_cls_dir = raw_test / cls
 
@@ -127,29 +139,34 @@ def main():
 
         copy_all(test_files, out_dir / "test" / cls)
 
-        stats[cls] = {"train": len(train_files), "val": len(val_files), "test": len(test_files)}
+        stats[cls] = {
+            "train": len(train_files),
+            "val": len(val_files),
+            "test": len(test_files),
+        }
 
-        print(f"{cls:>9s}  train = {len(train_files):5d}  val = {len(val_files):4d}  test = {len(test_files):4d}")
+        print(
+            f"{cls:>9s}  train = {len(train_files):5d}  val = {len(val_files):4d}  test = {len(test_files):4d}"
+        )
 
-    totals = {split: sum(stats[c][split] for c in CLASS_NAMES) for split in ("train", "val", "test")}
-
-    print(f"{'TOTAL':>9s}  train = {totals['train']:5d}  val = {totals['val']:4d}  test = {totals['test']:4d}")
-
-    meta = {
-
-        "class_names": CLASS_NAMES,
-
-        "val_fraction_of_train": args.val_fraction,
-
-        "seed": args.seed,
-
-        "counts": stats,
-
-        "totals": totals
-
+    totals = {
+        split: sum(stats[c][split] for c in CLASS_NAMES)
+        for split in ("train", "val", "test")
     }
 
-    out_dir.mkdir(parents = True, exist_ok = True)
+    print(
+        f"{'TOTAL':>9s}  train = {totals['train']:5d}  val = {totals['val']:4d}  test = {totals['test']:4d}"
+    )
+
+    meta = {
+        "class_names": CLASS_NAMES,
+        "val_fraction_of_train": args.val_fraction,
+        "seed": args.seed,
+        "counts": stats,
+        "totals": totals,
+    }
+
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     with open(out_dir / "dataset_stats.json", "w") as f:
 
@@ -159,5 +176,5 @@ def main():
 
 
 if __name__ == "__main__":
-    
+
     main()

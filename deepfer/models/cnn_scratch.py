@@ -25,16 +25,16 @@ from tensorflow.keras import layers, models, regularizers
 from deepfer import config
 
 
-def conv_block(x, filters, n_convs = 2, l2 = 1e-4):
+def conv_block(x, filters, n_convs=2, l2=1e-4):
 
     for _ in range(n_convs):
 
         x = layers.Conv2D(
-
-            filters, 3, padding = "same", use_bias = False,
-
-            kernel_regularizer = regularizers.l2(l2),
-
+            filters,
+            3,
+            padding="same",
+            use_bias=False,
+            kernel_regularizer=regularizers.l2(l2),
         )(x)
 
         x = layers.BatchNormalization()(x)
@@ -44,42 +44,44 @@ def conv_block(x, filters, n_convs = 2, l2 = 1e-4):
     return x
 
 
-def build_scratch_cnn(input_shape = (*config.SCRATCH_INPUT_SIZE, config.SCRATCH_CHANNELS), num_classes = config.NUM_CLASSES, dropout = 0.5) -> tf.keras.Model:
-  
-    inputs = layers.Input(shape = input_shape, name = "image")
+def build_scratch_cnn(
+    input_shape=(*config.SCRATCH_INPUT_SIZE, config.SCRATCH_CHANNELS),
+    num_classes=config.NUM_CLASSES,
+    dropout=0.5,
+) -> tf.keras.Model:
 
-    x = conv_block(inputs, 32, n_convs = 2)
-        
-    x = layers.MaxPooling2D()(x)              # 48 -> 24
-    
-    
-    x = conv_block(x, 64, n_convs = 2)
-        
-    x = layers.MaxPooling2D()(x)              # 24 -> 12
-        
+    inputs = layers.Input(shape=input_shape, name="image")
+
+    x = conv_block(inputs, 32, n_convs=2)
+
+    x = layers.MaxPooling2D()(x)  # 48 -> 24
+
+    x = conv_block(x, 64, n_convs=2)
+
+    x = layers.MaxPooling2D()(x)  # 24 -> 12
+
     x = layers.Dropout(0.25)(x)
-    
-    
-    x = conv_block(x, 128, n_convs = 2)
-        
-    x = layers.MaxPooling2D()(x)              # 12 -> 6
-        
+
+    x = conv_block(x, 128, n_convs=2)
+
+    x = layers.MaxPooling2D()(x)  # 12 -> 6
+
     x = layers.Dropout(0.25)(x)
-    
-    
-    x = conv_block(x, 256, n_convs = 1)
-        
-    x = layers.MaxPooling2D()(x)              # 6 -> 3
-    
+
+    x = conv_block(x, 256, n_convs=1)
+
+    x = layers.MaxPooling2D()(x)  # 6 -> 3
 
     x = layers.GlobalAveragePooling2D()(x)
 
-    x = layers.Dense(128, activation = "relu", kernel_regularizer=regularizers.l2(1e-4))(x)
+    x = layers.Dense(128, activation="relu", kernel_regularizer=regularizers.l2(1e-4))(
+        x
+    )
 
     x = layers.Dropout(dropout)(x)
 
-    outputs = layers.Dense(num_classes, activation = "softmax", name = "emotion")(x)
-    
+    outputs = layers.Dense(num_classes, activation="softmax", name="emotion")(x)
+
     return models.Model(inputs, outputs, name="deepfer_scratch_cnn")
 
 

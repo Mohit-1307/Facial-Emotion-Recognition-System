@@ -47,7 +47,7 @@ EXPECTED_MIN_BYTES = 9_000_000  # sanity floor; real file is ~9.4MB
 
 
 def download(url: str, dest: Path):
-    
+
     print(f"Downloading {url}\n -> {dest}")
 
     def _hook(block_num, block_size, total_size):
@@ -56,22 +56,24 @@ def download(url: str, dest: Path):
 
         pct = min(100, done * 100 // total_size) if total_size > 0 else 0
 
-        print(f"\r  {pct:3d}%", end = "", flush = True)
+        print(f"\r  {pct:3d}%", end="", flush=True)
 
-    urllib.request.urlretrieve(url, dest, reporthook = _hook)
-    
+    urllib.request.urlretrieve(url, dest, reporthook=_hook)
+
     print()
 
 
 def main():
 
-    WEIGHTS_DIR.mkdir(parents=True, exist_ok = True)
+    WEIGHTS_DIR.mkdir(parents=True, exist_ok=True)
 
     dest = WEIGHTS_DIR / FILENAME
 
     if dest.exists() and dest.stat().st_size >= EXPECTED_MIN_BYTES:
 
-        print(f"Already present: {dest} ({dest.stat().st_size:,} bytes) -- skipping download.")
+        print(
+            f"Already present: {dest} ({dest.stat().st_size:,} bytes) -- skipping download."
+        )
 
         return
 
@@ -84,17 +86,11 @@ def main():
         print(f"ERROR: failed to download pretrained weights: {e}", file=sys.stderr)
 
         print(
-
             "You can also just let deepfer/models/transfer_model.py use "
-
             "weights='imagenet' directly (the default on any machine that can "
-
             "reach storage.googleapis.com) -- this script is only needed as a "
-
             "workaround in network-restricted environments.",
-
-            file = sys.stderr
-
+            file=sys.stderr,
         )
 
         sys.exit(1)
@@ -103,9 +99,11 @@ def main():
 
     if size < EXPECTED_MIN_BYTES:
 
-        print(f"ERROR: downloaded file is only {size:,} bytes (expected >= {EXPECTED_MIN_BYTES:,}); "
-
-            "looks truncated or wrong. Deleting.", file = sys.stderr)
+        print(
+            f"ERROR: downloaded file is only {size:,} bytes (expected >= {EXPECTED_MIN_BYTES:,}); "
+            "looks truncated or wrong. Deleting.",
+            file=sys.stderr,
+        )
 
         dest.unlink()
 

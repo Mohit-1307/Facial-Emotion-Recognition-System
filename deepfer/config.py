@@ -9,7 +9,6 @@ exactly one place to change any of it.
 
 from pathlib import Path
 
-
 # Paths
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -34,8 +33,8 @@ METRICS_DIR = OUTPUTS_DIR / "metrics"
 
 
 for d in (SAVED_MODELS_DIR, PLOTS_DIR, LOGS_DIR, METRICS_DIR):
-    
-    d.mkdir(parents = True, exist_ok = True)
+
+    d.mkdir(parents=True, exist_ok=True)
 
 
 # Data / classes
@@ -49,11 +48,13 @@ NUM_CLASSES = len(CLASS_NAMES)
 
 # Emoji purely for the real-time overlay / web app, not used by the model.
 CLASS_EMOJI = {
-
-    "angry": "😠", "disgust": "🤢", "fear": "😨", "happy": "😄",
-
-    "neutral": "😐", "sad": "😢", "surprise": "😲"
-
+    "angry": "😠",
+    "disgust": "🤢",
+    "fear": "😨",
+    "happy": "😄",
+    "neutral": "😐",
+    "sad": "😢",
+    "surprise": "😲",
 }
 
 RAW_IMAGE_SIZE = (48, 48)  # native FER-2013 resolution, grayscale
@@ -88,9 +89,9 @@ TRANSFER_BACKBONE = "MobileNetV2"
 
 TRANSFER_BATCH_SIZE = 64
 
-HEAD_EPOCHS = 15         # phase 1: base frozen, train the classification head
+HEAD_EPOCHS = 15  # phase 1: base frozen, train the classification head
 
-FINE_TUNE_EPOCHS = 8     # phase 2: unfreeze top of the base, fine-tune end-to-end
+FINE_TUNE_EPOCHS = 8  # phase 2: unfreeze top of the base, fine-tune end-to-end
 
 HEAD_LR = 1e-3
 
@@ -102,12 +103,12 @@ FINE_TUNE_UNFREEZE_LAYERS = 30  # number of top backbone layers to unfreeze
 # Augmentation (explicitly required by the project brief: rotation, scaling,
 # flipping)
 
-AUG_ROTATION = 0.10       # fraction of 2*pi -> ~36 degrees max
+AUG_ROTATION = 0.10  # fraction of 2*pi -> ~36 degrees max
 
-AUG_ZOOM = 0.15           # random scale +/-15%
+AUG_ZOOM = 0.15  # random scale +/-15%
 
 AUG_HORIZONTAL_FLIP = True
 
-AUG_TRANSLATION = 0.10    # small random shift, helps with imperfect face crops
+AUG_TRANSLATION = 0.10  # small random shift, helps with imperfect face crops
 
 SEED = 42
