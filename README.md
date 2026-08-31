@@ -102,27 +102,23 @@ Full int8 gives the largest speedup and smallest footprint for both models, at a
 
 ```
 Facial-Emotion-Recognition-System/
-├── data/processed/                # train/, val/, test/ splits
-├── deepfer/
-│   ├── config.py                  # Single source of truth: paths, classes, hyperparameters
-│   ├── dataset.py                 # tf.data pipelines, augmentation, class-weight computation
-│   ├── metrics_utils.py           # Shared evaluation, plotting, and metrics-saving helpers
-│   └── models/                    # cnn_scratch.py, transfer_model.py
-├── outputs/                       # logs/, metrics/, plots/ — training curves, confusion matrices, metrics JSON
-├── saved_models/                  # Trained checkpoints + TFLite exports
-├── scripts/                       # Builds data/processed/{train,val,test} from raw FER-2013
-├── tests/                         # End-to-end pipeline test
-├── webapp/                        # Flask application (photo upload + live camera inference)
+├── data/    
+├── deepfer/   
+├── outputs/
+├── saved_models/     
+├── scripts/             
+├── tests/
+├── webapp/              
 ├── .dockerignore
 ├── .gitignore
-├── Dockerfile                     # Container build for deployment (gunicorn + webapp/app.py)
+├── Dockerfile            
 ├── README.md
-├── evaluate.py                    # Evaluates a checkpoint on the held-out test set
-├── optimize_export.py             # Converts a checkpoint to TFLite with quantization, benchmarks all variants
-├── realtime_webcam.py             # Desktop real-time inference (OpenCV)
+├── evaluate.py                  
+├── optimize_export.py
+├── realtime_webcam.py
 ├── requirements.txt
-├── train.py                       # Trains the from-scratch CNN
-└── train_transfer.py              # Trains the MobileNetV2 transfer model (head / finetune phases)
+├── train.py 
+└── train_transfer.py          
 ```
 
 ---
