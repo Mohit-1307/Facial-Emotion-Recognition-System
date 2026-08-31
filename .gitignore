@@ -1,31 +1,19 @@
-# Python
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
 .pytest_cache/
-
-# Virtual environment
 .venv/
 .vscode/
 env/
-
-# Trained model weights and checkpoints
 saved_models/*
 !saved_models/transfer_finetune_best.keras
 weights/
-
-# Dataset
 data/
-
-# Generated outputs
 outputs/
-
-# OS/editor cruft
 .DS_Store
 Thumbs.db
 *.swp
 *.ini
-
 # Logs
 *.log

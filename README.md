@@ -102,25 +102,27 @@ Full int8 gives the largest speedup and smallest footprint for both models, at a
 
 ```
 Facial-Emotion-Recognition-System/
-├── webapp/app.py                  # Flask application (photo upload + live camera inference)
-├── train.py                       # Trains the from-scratch CNN
-├── train_transfer.py              # Trains the MobileNetV2 transfer model (head / finetune phases)
-├── evaluate.py                    # Evaluates a checkpoint on the held-out test set
-├── optimize_export.py             # Converts a checkpoint to TFLite with quantization, benchmarks all variants
-├── realtime_webcam.py             # Desktop real-time inference (OpenCV)
+├── data/processed/                # train/, val/, test/ splits
 ├── deepfer/
 │   ├── config.py                  # Single source of truth: paths, classes, hyperparameters
 │   ├── dataset.py                 # tf.data pipelines, augmentation, class-weight computation
 │   ├── metrics_utils.py           # Shared evaluation, plotting, and metrics-saving helpers
 │   └── models/                    # cnn_scratch.py, transfer_model.py
-├── scripts/prepare_dataset.py     # Builds data/processed/{train,val,test} from raw FER-2013
-├── saved_models/                  # Trained checkpoints + TFLite exports
 ├── outputs/                       # logs/, metrics/, plots/ — training curves, confusion matrices, metrics JSON
-├── data/processed/                # train/, val/, test/ splits (not tracked in git)
-├── tests/test_pipeline.py         # End-to-end pipeline test
+├── saved_models/                  # Trained checkpoints + TFLite exports
+├── scripts/                       # Builds data/processed/{train,val,test} from raw FER-2013
+├── tests/                         # End-to-end pipeline test
+├── webapp/                        # Flask application (photo upload + live camera inference)
+├── .dockerignore
+├── .gitignore
 ├── Dockerfile                     # Container build for deployment (gunicorn + webapp/app.py)
+├── README.md
+├── evaluate.py                    # Evaluates a checkpoint on the held-out test set
+├── optimize_export.py             # Converts a checkpoint to TFLite with quantization, benchmarks all variants
+├── realtime_webcam.py             # Desktop real-time inference (OpenCV)
 ├── requirements.txt
-└── README.md
+├── train.py                       # Trains the from-scratch CNN
+└── train_transfer.py              # Trains the MobileNetV2 transfer model (head / finetune phases)
 ```
 
 ---
@@ -158,17 +160,6 @@ The app expects a trained checkpoint (default `saved_models/transfer_finetune_be
 [![Kaggle](https://img.shields.io/badge/Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/mohitsinghrajput1307)
 [![LeetCode](https://img.shields.io/badge/LeetCode-181717?style=flat-square&logo=leetcode&logoColor=FFA116)](https://leetcode.com/u/MOHIT_SINGH_RAJPUT/)
 [![Email](https://img.shields.io/badge/Email-D14836?style=flat-square&logo=gmail&logoColor=white)](mailto:mohitsinghrajput1307@gmail.com)
-
----
-
-## Acknowledgements
-
-* [FER-2013 Dataset](https://www.kaggle.com/datasets/msambare/fer2013)
-* TensorFlow / Keras
-* MobileNetV2 / ImageNet
-* OpenCV
-* Flask
-* Open Source Community
 
 ---
 
